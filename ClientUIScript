@@ -1,0 +1,166 @@
+local Plr = game.Players.LocalPlayer
+local UI = Plr:WaitForChild("PlayerGui"):WaitForChild("UI")
+local Mouse = Plr:GetMouse()
+local UIS = game:GetService("UserInputService")
+local TService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local PackTopPart = UI.PackTopPart
+local Card = UI.Card
+local CardsModule = require(game.ReplicatedStorage.Cards)
+
+local MouseDown = false
+local Opened = false
+local OnTheTable = false
+
+local function CheckRipParts()
+	for _, v in UI:GetChildren() do
+		if v.Name == "RipPart" and v.Visible then
+			return true
+		end
+	end
+	return false
+end
+
+local function ResetPack()
+	Opened = false
+	OnTheTable = false
+	PackTopPart.Visible = true
+	UI.Pack.Visible = true
+	UI.CardsBackFrame.Visible = false
+	PackTopPart.Position = UDim2.new({0.359, 0},{0.191, 0})
+	UI.Pack.Transparency = 0
+	PackTopPart.Transparency = 0
+	
+	
+	for _, v in UI:GetChildren() do
+		if v.Name == "RipPart" then
+			v.Visible = true
+		end
+		if v.Name == "UsedCard" then
+			v:Destroy()
+		end
+	end
+	
+	
+end
+
+local function SpawnPack()
+	print("spawned")
+	ResetPack()
+	
+	
+end
+
+UIS.InputBegan:Connect(function(inp, gpe)
+	if gpe then return end
+	if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+		MouseDown = true
+		if OnTheTable then
+			ResetPack()
+			return
+		end
+		if Opened then
+			SpawnPack()
+		end
+		print("TABLE:", OnTheTable, "Opened:", Opened)
+	end
+end)
+
+UIS.InputEnded:Connect(function(inp, gpe)
+	if gpe then return end
+	if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+		MouseDown = false
+		local PlayAnim = CheckRipParts()
+		if not PlayAnim and not Opened then
+			Opened = true
+			local TInfo1 = TweenInfo.new(0.2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			local Tween1 = TService:Create(PackTopPart, TInfo1, {Position = UDim2.new(0.359, 0, 0.043, 0)})
+			Tween1:Play()
+			Tween1.Completed:Connect(function()
+				local Tinfo2 = TweenInfo.new(0.2)
+				local Tween2 = TService:Create(PackTopPart, Tinfo2, {Transparency = 1})
+				Tween2:Play()
+				Tween2.Completed:Connect(function()
+					local CardTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+					for i = 1, 3 do
+						local UsedCard = Card:Clone()
+						UsedCard.Parent = UI
+						UsedCard.Visible = true
+						local CardTween = TService:Create(UsedCard, CardTweenInfo, {Position = UDim2.new(0.365, 0, -1.5, 0)})
+						CardTween:Play()
+						task.wait(1)
+						UsedCard:Destroy()
+					end
+					local Tween3 = TService:Create(UI.Pack, TInfo1, {Transparency = 1})
+					Tween3:Play()
+					UI.CardsBackFrame.Visible = true
+					UI.CardsBackFrame.Transparency = 0.4
+					local Tween4 = TService:Create(UI.CardsBackFrame, TInfo1, {Transparency = 0.4})
+					Tween4:Play()
+					for i = 1, 3 do
+						local UsedCard = Card:Clone()
+						local CardInfo = CardsModule.Cards["Card"..i]
+						UsedCard.Name = "UsedCard"
+						local card = CardsModule.ChooseCard()
+						print(card)
+						UsedCard.RarityLabel.Text = CardInfo.Rarity
+						UsedCard.CardNameLabel.Text = CardInfo.CardName
+						if CardInfo.Rarity == "Uncommon" then
+							UsedCard.RarityLabel.TextColor3 = Color3.new(0.121569, 1, 0.0588235)
+						elseif CardInfo.Rarity == "Rare" then
+							UsedCard.RarityLabel.TextColor3 = Color3.new(0.207843, 0.258824, 1)
+						elseif CardInfo.Rarity == "Epic" then
+							UsedCard.RarityLabel.TextColor3 = Color3.new(0.639216, 0.054902, 1)
+						elseif CardInfo.Rarity == "Legendary" then
+							UsedCard.RarityLabel.TextColor3 = Color3.new(1, 0.972549, 0.152941)
+						elseif CardInfo.Rarity == "Mythic" then
+							UsedCard.RarityLabel.TextColor3 = Color3.new(1, 0.0117647, 0.027451)
+						elseif CardInfo.Rarity == "UltraRare" then
+							UsedCard.RarityLabel.TextColor3 = Color3.new(1, 1, 1)
+						end
+						local FirstPos = UDim2.new(0.036, 0,-1.2, 0)
+						local SecondPos = UDim2.new(0.366, 0,-1.2, 0)
+						local ThirdPod = UDim2.new(0.701, 0,-1.2, 0)
+						if i == 1 then
+							UsedCard.Position = FirstPos
+						elseif i == 2 then
+							UsedCard.Position = SecondPos
+						elseif i == 3 then
+							UsedCard.Position = ThirdPod
+						end
+						local TweenInfo5 = TweenInfo.new(0.2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+						local Tween5 = TService:Create(UsedCard, TweenInfo5, {Position = UDim2.new(UsedCard.Position.X.Scale, UsedCard.Position.X.Offset, 0.230,UsedCard.Position.Y.Offset)})
+						UsedCard.Parent = UI
+						UsedCard.Visible = true
+						Tween5:Play()
+						task.wait(1)
+						task.spawn(function()
+							task.wait(2)
+							local TweenInfo6 = TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1, true)
+							local Tween6 = TService:Create(UsedCard, TweenInfo6,{Position = UsedCard.Position + UDim2.new(0,0,-0.01,0)})
+							Tween6:Play()
+						end)
+					end
+					OnTheTable = true
+				end)
+			end)
+		end
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if MouseDown and not Opened then
+		local MousePos = Vector2.new(Mouse.X, Mouse.Y)
+		for _, v in UI:GetChildren() do
+			if v.Name == "RipPart" and v.Visible then
+				local PartPos = v.AbsolutePosition
+				local PartSize = v.AbsoluteSize
+				local Center = Vector2.new(PartPos.X + PartSize.X / 2, PartPos.Y + PartSize.Y / 2)
+				if (MousePos - Center).Magnitude < 100 then  
+					v.Visible = false
+				end
+			end
+		end
+	end
+end)
+
